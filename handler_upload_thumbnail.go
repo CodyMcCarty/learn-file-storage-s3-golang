@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"io"
 	"mime"
 	"net/http"
@@ -50,7 +52,14 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	assetPath := getAssetPath(videoID, mediaType)
+	// One final cache update! Each time a new thumbnail is uploaded, we'll give it a new path on disk (and by extension, a new URL). This way, we can avoid all caching issues completely.
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error generating random bytes", err)
+		return
+	}
+	randPart := base64.RawURLEncoding.EncodeToString(b)
+	assetPath := randPart + mediaTypeToExt(mediaType)
 	assetDiskPath := cfg.getAssetDiskPath(assetPath)
 
 	dst, err := os.Create(assetDiskPath)
