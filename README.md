@@ -68,3 +68,4 @@ go run .
 ### personal notes:
 Run `sqlite3 tubely.db` to open the database file  
 
+$`aws s3 ls` to see name of bucket
