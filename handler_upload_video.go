@@ -82,6 +82,24 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	}
 
 	key := getAssetPath(mediaType)
+
+	// todo: Update the handlerUploadVideo to get the aspect ratio of the video file from the temporary file once it's saved to disk. Depending on the aspect ratio, add a "landscape", "portrait", or "other" prefix to the key before uploading it to S3.
+	aspect, err := getVideoAspectRatio(tempFile.Name())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error getting aspect", err)
+		return
+	}
+	var prefix string
+	switch aspect {
+	case "16:9":
+		prefix = "landscape/"
+	case "9:16":
+		prefix = "portrait/"
+	default:
+		prefix = "other/"
+	}
+	key = prefix + key
+
 	_, err = cfg.s3Client.PutObject(r.Context(), &s3.PutObjectInput{
 		Bucket:      aws.String(cfg.s3Bucket),
 		Key:         aws.String(key),
