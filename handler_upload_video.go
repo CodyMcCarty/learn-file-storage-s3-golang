@@ -130,11 +130,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	//url := fmt.Sprintf("%s,%s", cfg.s3Bucket, key)
-	// - Store an actual URL again in the video_url column, but this time, use the cloudfront URL.
-	// - 	Use your distribution's domain name, and then dynamically inject the S3 object's key.
-	// - 	Set the distribution's domain name in your .env and grab it from the apiConfig's s3CfDistribution field.
-	url := fmt.Sprintf("https://%s/%s", cfg.s3CfDistribution, key)
+	url := fmt.Sprintf("%s/%s", cfg.s3CfDistribution, key)
 	video.VideoURL = &url
 	err = cfg.db.UpdateVideo(video)
 	if err != nil {
